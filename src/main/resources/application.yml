@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: ceshi
+  datasource:
+    url: jdbc:mysql://localhost:3306/jx?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: '0610'
+    driver-class-name: com.mysql.cj.jdbc.Driver
+server:
+  port: 8099
+
+mybatis-plus:
+  configuration:
+    #??????????
+    map-underscore-to-camel-case: true
+    #??????
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    default-fetch-size: 100
+    default-statement-timeout: 30
+  type-aliases-package: cn.jx.ceshi.ceshi.entity
+  #??mapper??
+  mapper-locations: classpath:mapper/*.xml
+logging:
+  level:
+    root: info
+
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: false
+  support-methods-arguments: true
+  params:
+    countSql: true
+redis:
+  host: 127.0.0.1
+  port: 6379
