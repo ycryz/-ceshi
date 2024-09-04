@@ -209,7 +209,6 @@ public class OrderInfoController {
             Map<Integer, List<OrderInfoentity>> groupMapIsOverdue=orderInfoentities.stream()
                     .filter(detail -> detail.getCreateTime()!= null && detail.getCreateTime().startsWith("2024-07")&& detail.getIsOverdue()==1)
                     .collect(Collectors.groupingBy(x -> x.getHandleDeptId()));
-            //TODO
             HashMap<String, BigDecimal> stringBigDecimalHashMapDept = new HashMap<>();
             groupMap.forEach((k, v)->{
                 if (groupMapIsOverdue.containsKey(k)){
@@ -240,18 +239,64 @@ public class OrderInfoController {
      * @param
      * @return
      */
-    @PostMapping("/geteveryorderno")
-    public AjaxResult geteveryorderno(){
+    @PostMapping("/geteveryorderType")
+    public AjaxResult geteveryorderType(){
         Map<String, Object> successData = new HashMap<>();
-        String Key="order_info:July_month:geteveryorderno";
+        String Key="order_info:July_month:geteveryorderType";
         if (redisService.getCacheMap(Key).isEmpty()){
             //加工逻辑
+            List<OrderInfoentity> orderInfoentities = orderInfoMapper.selectList(null);
+            //查询7月每个工单类型的工单
+            Map<String, List<OrderInfoentity>> groupMap = orderInfoentities.stream()
+                    .filter(detail -> detail.getCreateTime()!= null && detail.getCreateTime().startsWith("2024-07"))
+                    .collect(Collectors.groupingBy(x -> x.getOrderType()));
+            HashMap<String, Integer>  groupMapEveryOrderTypeTotal= new HashMap<>();
+            groupMap.forEach((k, v)->{
+                String orderTypeName=this.orderTypeName(k);
+                groupMapEveryOrderTypeTotal.put(orderTypeName, v.size());
+            });
+            log.info("groupMapEveryOrderTypeTotal:{}",groupMapEveryOrderTypeTotal);
+            //查询7月每个工单类型的超期工单
+            Map<String, List<OrderInfoentity>> groupMapIsOverdue=orderInfoentities.stream()
+                    .filter(detail -> detail.getCreateTime()!= null && detail.getCreateTime().startsWith("2024-07")&& detail.getIsOverdue()==1)
+                    .collect(Collectors.groupingBy(x -> x.getOrderType()));
+            HashMap<String, BigDecimal> stringBigDecimalHashMapDept = new HashMap<>();
+            groupMap.forEach((k, v)->{
+                if (groupMapIsOverdue.containsKey(k)){
+                    BigDecimal divide = new BigDecimal(groupMapIsOverdue.get(k).size()).divide(new BigDecimal(v.size()), 2, BigDecimal.ROUND_HALF_UP);
+                    String orderTypeName=this.orderTypeName(k);
+                    stringBigDecimalHashMapDept.put(orderTypeName,divide);
+                }
+            });
+            log.info("stringBigDecimalHashMap:{}",stringBigDecimalHashMapDept);
+            successData.put("groupMapEveryOrderTypeTotal",groupMapEveryOrderTypeTotal);
+            successData.put("stringBigDecimalHashMapDept",stringBigDecimalHashMapDept);
+            redisService.setCacheMap(Key,successData);
+            if (successData.isEmpty()){
+                return AjaxResult.error("没有查询到数据");
+            }
 
             redisService.setCacheMap(Key,successData);
         }else {
             successData=redisService.getCacheMap(Key);
         }
         return AjaxResult.success(successData);
+    }
+
+    private String orderTypeName(String k) {
+        if (k==null){
+            return "未知工单";
+        }
+        switch (k){
+            case "0":
+                return "交办工单";
+            case "1":
+                return "直接答复工单";
+            case "3":
+                return "无效工单";
+            default:
+                return "未知工单";
+        }
     }
 
 
