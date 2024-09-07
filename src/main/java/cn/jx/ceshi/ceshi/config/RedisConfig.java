@@ -1,6 +1,7 @@
 package cn.jx.ceshi.ceshi.config;
  
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -14,8 +15,9 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableCaching  // 开启缓存
 @Configuration  // 配置类
 public class RedisConfig extends CachingConfigurerSupport {
- 
- 
+
+    @Value("${redis.database}")
+    private Integer database;
     /**
      * 配置 Redis 连接工厂
      * 意义: LettuceConnectionFactory 是连接 Redis 服务器的入口，它使用了 Lettuce 客户端，并且配置了连接池来提高性能和资源管理
@@ -27,7 +29,10 @@ public class RedisConfig extends CachingConfigurerSupport {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
         redisStandaloneConfiguration.setHostName("localhost");
         redisStandaloneConfiguration.setPort(6379);
-        redisStandaloneConfiguration.setDatabase(2);
+        if (database == null || database > 15 || database < 0) {
+            database = 0;
+        }
+        redisStandaloneConfiguration.setDatabase(database);
         // redisStandaloneConfiguration.setPassword("password"); // 取消注释以设置密码
  
         // 配置连接池

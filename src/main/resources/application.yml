@@ -34,3 +34,4 @@ pagehelper:
 redis:
   host: 127.0.0.1
   port: 6379
+  database:  1  # 默认0，可以是任意数也可以是空值，但是这个属性是必须存在的，否则会报错
