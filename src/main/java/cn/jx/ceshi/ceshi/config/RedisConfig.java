@@ -27,13 +27,14 @@ public class RedisConfig extends CachingConfigurerSupport {
         RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
         redisStandaloneConfiguration.setHostName("localhost");
         redisStandaloneConfiguration.setPort(6379);
+        redisStandaloneConfiguration.setDatabase(2);
         // redisStandaloneConfiguration.setPassword("password"); // 取消注释以设置密码
  
         // 配置连接池
         GenericObjectPoolConfig<Object> poolConfig = new GenericObjectPoolConfig<>();
         poolConfig.setMaxTotal(10);       // 连接池中的最大连接数
         poolConfig.setMaxIdle(5);         // 连接池中的最大空闲连接数
-        poolConfig.setMinIdle(1);         // 连接池中的最小空闲连接数
+        poolConfig.setMinIdle(1);         // 切换到数redis据源db2中
         poolConfig.setMaxWaitMillis(2000); // 连接池获取连接的最大等待时间
  
         // 创建一个带有连接池配置的 Lettuce 客户端配置
@@ -63,6 +64,7 @@ public class RedisConfig extends CachingConfigurerSupport {
         template.setConnectionFactory(redisConnectionFactory());  // 设置连接工厂
         template.setKeySerializer(new StringRedisSerializer());  // 设置键的序列化器
         template.setValueSerializer(new StringRedisSerializer()); // 设置值的序列化器
+
         return template;
     }
 }
